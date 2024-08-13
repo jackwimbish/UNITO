@@ -1,0 +1,9 @@
+# ignore all data
+**/Raw_Data
+**/Data
+**/Data_image
+**/figures
+**/model
+**/Model
+**/prediction
+**/Expected Output
