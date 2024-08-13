@@ -7,3 +7,5 @@
 **/Model
 **/prediction
 **/Expected Output
+*.DS_Store
+**/__pycache__
