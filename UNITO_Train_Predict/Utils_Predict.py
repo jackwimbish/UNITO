@@ -7,7 +7,7 @@ from Data_Preprocessing import normalize
 import cv2
 
 
-def mask_to_gate(y_list, pred_list, x_list, subj_list, x_axis, y_axis, gate, gate_pre, path_raw, save_prediction_path, worker = 0, idx = 0, seq = False):
+def mask_to_gate(y_list, pred_list, x_list, subj_list, x_axis, y_axis, gate, gate_pre, path_raw, save_prediction_path, dest, worker = 0, idx = 0, seq = False):
   """
   Prepare data for converting predicted mask to cell-level labels
   args:
@@ -31,7 +31,7 @@ def mask_to_gate(y_list, pred_list, x_list, subj_list, x_axis, y_axis, gate, gat
   subj_path = subj_list[worker][idx]
 
   # find path for raw tabular data
-  substring = os.path.join(f"./Data_image/Data_{gate}/Raw_Numpy/")
+  substring = os.path.join(f"{dest}/Data/Data_{gate}/Raw_Numpy/")
   subj_path = subj_path.split(substring)[1]
   substring = ".csv.npy"
   subj_path = subj_path.split(substring)[0]
@@ -86,7 +86,7 @@ def get_pred_label(data_df, x_axis, y_axis, mask, gate, gate_pre=None, seq=False
     index_x = np.linspace(0,100,101).round(0).astype(int).astype(str)
     index_y = np.linspace(0,100,101).round(0).astype(int).astype(str)
     index_x = index_y[::-1] # invert y axis
-    df_plot = pd.DataFrame(mask.reshape(101,101), index_x, index_y)
+    df_plot = pd.DataFrame(mask.cpu().numpy().reshape(101,101), index_x, index_y)
 
     gate_pred = gate + '_pred'
     # data_df_selected[gate_pred] = [int(df_plot.loc[str(a), str(b)]) for (a, b) in zip(data_df_selected[x_axis], data_df_selected[y_axis])]
@@ -168,7 +168,12 @@ def denoise(img):
 
 
 def evaluation(data_df_pred, gate):
-
+    """
+    Evaluating gating performance    
+    args:
+      data_df_pred: predicted dataframe
+      gate: the gate name needs to be evaluated
+    """
     accuracy = accuracy_score(data_df_pred[gate], data_df_pred[gate+'_pred'])
     recall = recall_score(data_df_pred[gate], data_df_pred[gate+'_pred'])
     precision = precision_score(data_df_pred[gate], data_df_pred[gate+'_pred'])

@@ -21,7 +21,7 @@ def plot_all(gate1, gate2, x_axis, y_axis, raw_path, figure_path):
     if not os.path.exists(f"{figure_path}/Figure_{gate2}"):
         os.mkdir(f"{figure_path}/Figure_{gate2}")
 
-    path_val = pd.read_csv(f"./Data_image/Data_{gate2}/pred/subj.csv")
+    path_val = pd.read_csv(f"./Data/Data_{gate2}/pred/subj.csv")
     # find path for raw tabular data
     for subject in path_val.Image:
         plot_one(gate1, gate2, x_axis, y_axis, subject, raw_path, figure_path)
@@ -38,7 +38,7 @@ def plot_one(gate1, gate2, x_axis, y_axis, subject, raw_path, figure_path):
         raw_path: path containing raw data
         figure_path: path to save figures
     """
-    substring = f"./Data_image/Data_{gate2}/Raw_Numpy/"   
+    substring = f"./Data/Data_{gate2}/Raw_Numpy/"   
     subject = subject.split(substring)[1]
     substring = ".npy"
     subject = subject.split(substring)[0]

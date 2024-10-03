@@ -63,4 +63,3 @@ class UNITO(nn.Module):
       x = self.ups[idx+1](concat_skip)
 
     return self.final_conv(x)
-

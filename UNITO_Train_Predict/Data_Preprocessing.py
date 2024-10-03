@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import pandas as pd
+import random
 import matplotlib.pyplot as plt
 import seaborn as sn
 import scipy
@@ -39,7 +40,7 @@ def matrix_plot(data_df_selected, x_axis, y_axis, pad_number = 0):
     coord = list(zip(coord[0], coord[1]))
     replace = data_df_selected_count[['count']].to_numpy()
     for index, value in zip(coord, replace):
-        density[index] = value + pad_number # this is to make boundary more recognizable for visualization
+        density[index] = value + pad_number
     
     index_x = np.linspace(0,100,101).round(2)
     index_y = np.linspace(0,100,101).round(2)
@@ -47,7 +48,7 @@ def matrix_plot(data_df_selected, x_axis, y_axis, pad_number = 0):
 
     return df_plot
 
-def export_matrix(file_name, x_axis, y_axis, gate_pre, gate, seq = False, raw_path = "./Raw_Data/"):
+def export_matrix(file_name, x_axis, y_axis, gate_pre, gate, path_raw, seq = False, dest = '.'):
     """
     Converting column value from cytometric data to images
     args
@@ -59,13 +60,10 @@ def export_matrix(file_name, x_axis, y_axis, gate_pre, gate, seq = False, raw_pa
         seq: whether cells from previous gate should be filtered
         raw_path: path storing raw data
     """
-
+    data_df = pd.read_csv(os.path.join(path_raw, file_name))
     if seq:
-        data_df = pd.read_csv(os.path.join(f'./prediction/', file_name))
-        data_df = data_df[data_df[gate_pre + '_pred']==1]
-    else:
-        data_df = pd.read_csv(os.path.join(raw_path, file_name))
- 
+        data_df = data_df[data_df[gate_pre]==1]
+
     data_df_selected = data_df[[x_axis, y_axis, gate]]
     data_df_selected[x_axis] = normalize(data_df_selected, x_axis)
     data_df_selected[x_axis] = data_df_selected[x_axis]*100
@@ -75,8 +73,8 @@ def export_matrix(file_name, x_axis, y_axis, gate_pre, gate, seq = False, raw_pa
     fig = plt.figure()
     df_plot = matrix_plot(data_df_selected, x_axis, y_axis, 0)
     sn.heatmap(df_plot, vmax = df_plot.max().max()/2, vmin = df_plot.min().min()/2)
-    plt.savefig(os.path.join(f'./Data_image/Data_{gate}/Raw_PNG/', file_name+'.png'))
-    np.save(os.path.join(f'./Data_image/Data_{gate}/Raw_Numpy/', file_name+'.npy'), df_plot)
+    plt.savefig(os.path.join(f'{dest}/Data/Data_{gate}/Raw_PNG/', file_name+'.png'))
+    np.save(os.path.join(f'{dest}/Data/Data_{gate}/Raw_Numpy/', file_name+'.npy'), df_plot)
     plt.close()
     
     fig = plt.figure()
@@ -88,11 +86,11 @@ def export_matrix(file_name, x_axis, y_axis, gate_pre, gate, seq = False, raw_pa
     if np.sum(df_plot) > 3:
         df_plot = fill_hull(df_plot)
     sn.heatmap(df_plot, vmax = df_plot.max().max()/2, vmin = df_plot.min().min()/2)
-    plt.savefig(os.path.join(f'./Data_image/Data_{gate}/Mask_PNG/', file_name+'.png'))
-    np.save(os.path.join(f'./Data_image/Data_{gate}/Mask_Numpy/', file_name+'.npy'), df_plot)
+    plt.savefig(os.path.join(f'{dest}/Data/Data_{gate}/Mask_PNG/', file_name+'.png'))
+    np.save(os.path.join(f'{dest}/Data/Data_{gate}/Mask_Numpy/', file_name+'.npy'), df_plot)
     plt.close()
 
-def process_table(x_axis, y_axis, gate_pre, gate, data_path, seq = False):   
+def process_table(x_axis, y_axis, gate_pre, gate, directory, seq = False, dest = '.'):   
     """
     Preparing images for deep learning model
     args:
@@ -103,17 +101,14 @@ def process_table(x_axis, y_axis, gate_pre, gate, data_path, seq = False):
         data_path: path storing raw data
         seq: whether cells from previous gate should be filtered
     """
-    if not os.path.exists(f'./Data_image/Data_{gate}'):
-        os.mkdir(f"./Data_image/Data_{gate}")
-        os.mkdir(f"./Data_image/Data_{gate}/Mask_Numpy")
-        os.mkdir(f"./Data_image/Data_{gate}/Mask_PNG")
-        os.mkdir(f"./Data_image/Data_{gate}/Raw_Numpy")
-        os.mkdir(f"./Data_image/Data_{gate}/Raw_PNG")
+    if not os.path.exists(f'{dest}/Data/Data_{gate}'):
+        os.mkdir(f"{dest}/Data/Data_{gate}")
+        os.mkdir(f"{dest}/Data/Data_{gate}/Mask_Numpy")
+        os.mkdir(f"{dest}/Data/Data_{gate}/Mask_PNG")
+        os.mkdir(f"{dest}/Data/Data_{gate}/Raw_Numpy")
+        os.mkdir(f"{dest}/Data/Data_{gate}/Raw_PNG")
 
-    # assign directory
-    directory = data_path
     # iterate over files in that directory
-    # extract baseline timepoint
     name_list = []
     for filename in os.listdir(directory):
         f = os.path.join(directory, filename)
@@ -126,44 +121,43 @@ def process_table(x_axis, y_axis, gate_pre, gate, data_path, seq = False):
     
     # process the baseline subject
     for filename in name_list:
-        export_matrix(filename, x_axis, y_axis, gate_pre, gate, seq, data_path)
+        export_matrix(filename, x_axis, y_axis, gate_pre, gate, directory, seq, dest)
     print("process table finished")
 
 
 def filter(path_list):
-  """
-  keep only npy files in path list, just in case there are hidden sync files
-  args:
-    path_list: path containing the data
-  """
-  path_ = []
-  for path in path_list:
-    if 'npy' in path:
-      path_.append(path)
-  return path_
+    """
+    keep only npy files in path list, just in case there are hidden sync files
+    args:
+        path_list: path containing the data
+    """
+    path_ = []
+    for path in path_list:
+        if 'npy' in path:
+            path_.append(path)
+    return path_
 
-def prepare_subj(gate):
+def train_test_val_split(gate, dest = '.', train_pred = 'train'):
     """
     Prepare the subject list for training and prediction
     args:
         gate: the gate name that needs to be gated
     """
-    if not os.path.exists(f"./Data_image/Data_{gate}/pred"):
-        os.mkdir(f"./Data_image/Data_{gate}/pred")
+    if not os.path.exists(f"{dest}/Data/Data_{gate}/{train_pred}"):
+        os.mkdir(f"{dest}/Data/Data_{gate}/{train_pred}")
 
-    imgs = list(sorted(os.listdir(f"./Data_image/Data_{gate}/Raw_Numpy")))
-    masks = list(sorted(os.listdir(f"./Data_image/Data_{gate}/Mask_Numpy")))
+    subj_list = os.listdir(f'{dest}/Raw_Data_{train_pred}')
+    subj_list = [x+'.npy' for x in subj_list if 'csv' in x]
 
-    imgs_ = [f"./Data_image/Data_{gate}/Raw_Numpy/"+x for x in imgs]
-    masks_ = [f"./Data_image/Data_{gate}/Mask_Numpy/"+x for x in masks]
+    imgs_ = [f"{dest}/Data/Data_{gate}/Raw_Numpy/"+x for x in subj_list]
+    masks_ = [f"{dest}/Data/Data_{gate}/Mask_Numpy/"+x for x in subj_list]
 
     imgs = filter(imgs_)
     masks = filter(masks_)
     path = pd.DataFrame(list(zip(imgs, masks)), columns = ['Image','Mask'])
 
-    path.to_csv(f"./Data_image/Data_{gate}/pred/subj.csv", index=False)
-    
-    print('Data processing finished')
+    path.to_csv(f"{dest}/Data/Data_{gate}/{train_pred}/subj.csv", index=False)
+
 
 def fill_hull(image):
     """
@@ -191,8 +185,3 @@ def fill_hull(image):
 
     return black_frame
 
-
-
-    
-    
-    

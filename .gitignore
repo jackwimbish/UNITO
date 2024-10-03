@@ -1,5 +1,7 @@
 # ignore all data
 **/Raw_Data
+**/Raw_Data_pred
+**/Raw_Data_train
 **/Data
 **/Data_image
 **/figures

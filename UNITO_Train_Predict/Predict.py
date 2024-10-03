@@ -9,7 +9,7 @@ from Dataset import dataset
 from Utils_Predict import *
 from Data_Preprocessing import *
 
-def UNITO_gating(model_path, x_axis, y_axis, gate, path_raw, num_workers, device, save_prediction_path, seq = False, gate_pre = None):
+def UNITO_gating(model_path, x_axis, y_axis, gate, path_raw, num_workers, device, save_prediction_path, dest, seq = False, gate_pre = None):
   """
   Performs UNITO auto-gating
   args:
@@ -37,7 +37,7 @@ def UNITO_gating(model_path, x_axis, y_axis, gate, path_raw, num_workers, device
       ],
   )
 
-  path_val = pd.read_csv(f"./Data_image/Data_{gate}/pred/subj.csv")
+  path_val = pd.read_csv(f"{dest}/Data/Data_{gate}/pred/subj.csv")
 
   val_ds = dataset(path_val, test_transforms)
   val_loader = DataLoader(val_ds, batch_size = path_val.shape[0], num_workers = num_workers, pin_memory = True)
@@ -46,7 +46,7 @@ def UNITO_gating(model_path, x_axis, y_axis, gate, path_raw, num_workers, device
 
   for ind in range(path_val.shape[0]):
 
-      data_df_pred, subj_path = mask_to_gate(y_val_list, preds_list, x_list, subj_list, x_axis, y_axis, gate, gate_pre, path_raw, save_prediction_path, worker = 0, idx = ind, seq = seq)
+      data_df_pred, subj_path = mask_to_gate(y_val_list, preds_list, x_list, subj_list, x_axis, y_axis, gate, gate_pre, path_raw, save_prediction_path, dest, worker = 0, idx = ind, seq = seq)
 
   print("UNITO prediction finished")
 
