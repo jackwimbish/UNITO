@@ -96,4 +96,4 @@ for i, (gate_pre, gate, x_axis, y_axis, path_raw) in enumerate(zip(gate_pre_list
 print("Seqential autogating prediction finished")
 
 
-hyperparameter_df.to_csv('./hyperparameter_tunning.py')
+hyperparameter_df.to_csv('./hyperparameter_tunning.csv')
