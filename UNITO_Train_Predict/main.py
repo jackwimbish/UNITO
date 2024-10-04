@@ -68,7 +68,7 @@ for i, (gate_pre, gate, x_axis, y_axis, path_raw) in enumerate(zip(gate_pre_list
     # 1. preprocess training data
     train_path = './Raw_Data_train'
     process_table(x_axis, y_axis, gate_pre, gate, train_path, seq = (gate_pre!=None), dest = dest)
-    train_test_val_split(gate, dest, "train")
+    train_test_val_split(gate, train_path, dest, "train")
 
     # 2. train
     best_lr, best_bs = tune(gate, hyperparameter_set, device, epoches, n_worker, dest)
@@ -79,7 +79,7 @@ for i, (gate_pre, gate, x_axis, y_axis, path_raw) in enumerate(zip(gate_pre_list
     print(f"Start prediction for {gate}")
     pred_path = './Raw_Data_pred'
     process_table(x_axis, y_axis, gate_pre, gate, pred_path, seq = (gate_pre!=None), dest = dest)
-    train_test_val_split(gate, dest, 'pred')
+    train_test_val_split(gate, pred_path, dest, 'pred')
 
     # 4. predict
     model_path = f'{dest}/model/{gate}_model.pt'

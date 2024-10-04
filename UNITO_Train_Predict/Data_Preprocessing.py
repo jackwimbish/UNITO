@@ -137,7 +137,7 @@ def filter(path_list):
             path_.append(path)
     return path_
 
-def train_test_val_split(gate, dest = '.', train_pred = 'train'):
+def train_test_val_split(gate, path, dest = '.', train_pred = 'train'):
     """
     Prepare the subject list for training and prediction
     args:
@@ -146,7 +146,7 @@ def train_test_val_split(gate, dest = '.', train_pred = 'train'):
     if not os.path.exists(f"{dest}/Data/Data_{gate}/{train_pred}"):
         os.mkdir(f"{dest}/Data/Data_{gate}/{train_pred}")
 
-    subj_list = os.listdir(f'{dest}/Raw_Data_{train_pred}')
+    subj_list = os.listdir(path)
     subj_list = [x+'.npy' for x in subj_list if 'csv' in x]
 
     imgs_ = [f"{dest}/Data/Data_{gate}/Raw_Numpy/"+x for x in subj_list]
