@@ -28,7 +28,7 @@ def UNITO_gating(model_path, x_axis, y_axis, gate, path_raw, num_workers, device
   # in sequential predicting, the path_raw is the path for prediction of last gate
   PATH = os.path.join(model_path)
   model = UNITO().to(device)
-  model.load_state_dict(torch.load(PATH))
+  model.load_state_dict(torch.load(PATH, map_location=device))
   model.eval()
 
   test_transforms = A.Compose(
