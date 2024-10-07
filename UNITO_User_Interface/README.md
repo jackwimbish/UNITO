@@ -23,6 +23,11 @@ $ conda install anaconda::numpy pandas matplotlib seaborn scipy scikit-learn pyq
 $ conda install -c conda-forge opencv albumentations datashader
 ```
 
+Start user interface
+```
+Python UNITO_GUI.py
+```
+
 ## Input structure
 The main functions of UNITO takes the cytometric measurement data as input and user can provide names for the two protein channel for bivariate plot and the gate name to perform automatic gating. Users can also provide gate name for previous gate to filter out-of-gate cells from previous gate. The input format of UNITO is essentially two columns of protein measurement and an addition binary column for cell types (cell type label required only for training UNITO), and we provide an example script preparing the input data from OMIQ platform. 
 
@@ -56,9 +61,13 @@ The software version provides a user-friendly graphical interface for automatic 
 
 ### How to Use:
 1. **Install the Software**: Follow the installation instructions provided in the repository to set up the software on your machine.
-2. **Load Your Data**: In the software, load your CSV data files into the interface for automatic gating.
-3. **Run the Gating Process**: Simply click the appropriate buttons to start the automatic gating. The results will be displayed and saved in the specified output folder.
-4. **Use a Pre-trained Model (Optional)**: If you have trained a custom model using the Python or Jupyter notebook versions, you can load the model into the software for gating your data.
+2. **Use a Pre-trained Model**: If you have trained a custom model using the Python or Jupyter notebook versions, you can load the model into the software for gating your data.
+3. **Load Your Data**: In the software, load your CSV data files into the interface for automatic gating.
+4. **Run the Gating Process**: Simply click the appropriate buttons to start the automatic gating. The results will be displayed and saved in the specified output folder.
+
+![Example Image](./Example%20Image.png)
+
+
 
 ### System Requirements:
 - **Operating System**: Windows, MacOS, or Linux

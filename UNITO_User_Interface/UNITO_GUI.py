@@ -344,7 +344,7 @@ class MainWindow(QWidget):
             ax[1].set_title("UNITO Auto-gating")
 
             # save figure
-            plt.savefig(f'./figures/Figure_{self.gate}/Recon_Sequential_{subject}.png')
+            plt.savefig(f'./figures/Figure_{self.gate}_Recon_Sequential_{subject}.png')
             plt.close()
         else:
             print("No data or gate not selected")
