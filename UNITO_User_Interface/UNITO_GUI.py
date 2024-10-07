@@ -218,9 +218,14 @@ class MainWindow(QWidget):
 
             if in_gate.shape[0] > 3:
                 hull = ConvexHull(in_gate)
-                line, = self.canvas.axes.plot(in_gate[hull.vertices, 0], in_gate[hull.vertices, 1], 'k-')
+                line, = self.canvas.axes.plot(
+                    np.append(in_gate[hull.vertices, 0], in_gate[hull.vertices[0], 0]), 
+                    np.append(in_gate[hull.vertices, 1], in_gate[hull.vertices[0], 1]), 
+                    'k-'
+                )
 
                 # Add draggable points
+
                 self.points = []
                 for i, (xi, yi) in enumerate(in_gate[hull.vertices]):
                     point = plt.Circle((xi, yi), 0.5, color='r', picker=True)
@@ -252,8 +257,95 @@ class MainWindow(QWidget):
     def save_plot(self):
         if self.gate and self.x_axis and self.y_axis and self.path_raw:
             subject = self.file_name.split('/')[-1]
-            plot_all(self.gate_pre, self.gate, self.x_axis, self.y_axis, self.path_raw, save_figure_path)
-            print("Plot saved.")
+            data_table = pd.read_csv(f'./prediction/{subject}')
+            fig, ax = plt.subplots(1, 2, figsize=(16, 8))
+
+            ###########################################################
+            # True
+            ###########################################################
+
+            data = data_table.copy()
+            if self.gate_pre != None:
+                data = data[data[self.gate_pre]==1]
+            
+            in_gate = data[data[self.gate] == 1]
+            out_gate = data[data[self.gate] == 0]
+            in_gate = in_gate[[self.x_axis, self.y_axis]].to_numpy()
+            out_gate = out_gate[[self.x_axis, self.y_axis]].to_numpy()
+
+            if in_gate.shape[0] > 3:
+                hull = ConvexHull(in_gate)
+                for simplex in hull.simplices:
+                    ax[0].plot(in_gate[simplex, 0], in_gate[simplex, 1], 'k-')
+
+                density_plot = dsshow(
+                    data,
+                    ds.Point(self.x_axis, self.y_axis),
+                    ds.count(),
+                    vmin=0,
+                    vmax=300,
+                    norm='linear',
+                    cmap='jet',
+                    aspect='auto',
+                    ax=ax[0],
+                )
+
+            # cbar = plt.colorbar(density_plot)
+            # cbar.set_label('Number of cells in pixel')
+            ax[0].set_xlabel(self.x_axis)
+            ax[0].set_ylabel(self.y_axis)
+
+            ax[0].set_title("Manual Gating")
+
+
+            ###########################################################
+            # predict
+            ###########################################################
+            
+            x_axis_pred = self.x_axis
+            y_axis_pred = self.y_axis
+
+            if self.gate_pre != None:
+                gate1_pred = self.gate_pre + '_pred'
+            gate2_pred = self.gate + '_pred'
+
+            data_table = pd.read_csv(f'./prediction/{subject}')
+
+            data = data_table.copy()
+            if self.gate_pre != None:
+                data = data[data[gate1_pred]==1]
+            in_gate = data[data[gate2_pred] == 1]
+            out_gate = data[data[gate2_pred] == 0]
+            in_gate = in_gate[[x_axis_pred, y_axis_pred]].to_numpy()
+            out_gate = out_gate[[x_axis_pred, y_axis_pred]].to_numpy()
+
+            if in_gate.shape[0] > 3:
+                hull = ConvexHull(in_gate)
+                for simplex in hull.simplices:
+                    ax[1].plot(in_gate[simplex, 0], in_gate[simplex, 1], 'k-')
+
+                density_plot = dsshow(
+                    data,
+                    ds.Point(x_axis_pred, y_axis_pred),
+                    ds.count(),
+                    vmin=0,
+                    vmax=300,
+                    norm='linear',
+                    cmap='jet',
+                    aspect='auto',
+                    ax=ax[1],
+                )
+
+            # cbar = plt.colorbar(density_plot)
+            # cbar.set_label('Number of cells in pixel')
+            ax[1].set_xlabel(self.x_axis)
+            ax[1].set_ylabel(self.y_axis)
+
+            ax[1].set_title("UNITO Auto-gating")
+
+            # save figure
+            plt.savefig(f'./figures/Figure_{self.gate}/Recon_Sequential_{subject}.png')
+            plt.close()
         else:
             print("No data or gate not selected")
 

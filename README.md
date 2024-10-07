@@ -1,5 +1,5 @@
 # UNITO
-Recent advances in cytometry technology have enabled high-throughput data collection with multiple single-cell protein expression measurements. The significant biological and technical variance between samples in cytometry has long posed a formidable challenge during the gating process, especially for the initial pre-gates which deal with unpredictable events, such as debris and technical artifacts. Even with the same experimental machine and protocol, the target population, as well as the cell population that needs to be excluded, may vary across different measurements. To address this challenge and mitigate the labor-intensive manual gating process, we propose a deep learning framework UNITO to rigorously identify the hierarchical cytometric subpopulations. The UNITO framework transformed a cell-level classification task into an image-based semantic segmentation problem. For reproducibility purposes, the framework was applied on three independent cohorts and successfully detected initial gates that were required to identify single cellular events as well as subsequent cell gates. We validated the UNITO framework by comparing its results with previous automated methods and the consensus of at least four experienced immunologists. UNITO outperformed existing automated methods and differed from human consensus by no more than each individual human. Most critically, UNITO framework functions as a fully automated pipeline after training and does not require human hints or prior knowledge. Unlike existing multi-channel classification or clustering pipelines, UNITO can reproduce a similar contour compared to manual gating for each intermediate gating to achieve better interpretability and provide post hoc visual inspection. Beyond acting as a pioneer framework that uses image segmentation to do auto-gating, UNITO gives a fast and interpretable way to assign the cell subtype membership, and the speed of UNITO will not be impacted by the number of cells from each sample. The pre-gating and gating inference takes approximately 2 minutes for each sample using our pre-defined 9 gates system, and it can also adapt to any sequential prediction with different configurations.
+Recent advances in cytometry technology have enabled high-throughput data collection with multiple single-cell protein expression measurements. The significant biological and technical variance between samples in cytometry has long posed a formidable challenge during the gating process, especially for the initial pre-gates which deal with unpredictable events, such as debris and technical artifacts. Even with the same experimental machine and protocol, the target population, as well as the cell population that needs to be excluded, may vary across different measurements. To address this challenge and mitigate the labor-intensive manual gating process, we propose a deep learning framework UNITO to rigorously identify the hierarchical cytometric subpopulations. The UNITO framework transformed a cell-level classification task into an image-based semantic segmentation problem. For reproducibility purposes, the framework was applied on three independent cohorts (two mass cytometry cohorts and one flow cytometry dataset) and successfully detected initial gates that were required to identify single cellular events as well as subsequent cell gates. We validated the UNITO framework by comparing its results with previous automated methods and the consensus of at least four experienced immunologists. UNITO outperformed existing automated methods and differed from human consensus by no more than each individual human. Most critically, UNITO framework functions as a fully automated pipeline after training for either mass cytometry and flow cytometry, and it does not require human hints or prior knowledge for automatic gating. Unlike existing multi-channel classification or clustering pipelines, UNITO can reproduce a similar contour compared to manual gating for each intermediate gating to achieve better interpretability and provide post hoc visual inspection. Beyond acting as a pioneer framework that uses image segmentation to do auto-gating, UNITO gives an interpretable way to assign the cell subtype membership, and it also allows easy parallelization of samples for faster processing. The pre-gating and gating inference takes approximately 10 seconds for each sample gate using our pre-defined 9 gates system, and it can also adapt to any sequential prediction with different configurations.
 
 
 ## License
@@ -24,9 +24,9 @@ $ conda install -c conda-forge opencv albumentations datashader
 ```
 
 ## Input structure
-The main functions of UNITO takes the cytometric measurement data as input and user can provide names for the two protein channel for bivariate plot and the gate name to perform automatic gating. Users can also provide gate name for previous gate to filter out-of-gate cells from previous gate. 
+The main functions of UNITO takes the cytometric measurement data as input and user can provide names for the two protein channel for bivariate plot and the gate name to perform automatic gating. Users can also provide gate name for previous gate to filter out-of-gate cells from previous gate. The input format of UNITO is essentially two columns of protein measurement and an addition binary column for cell types (cell type label required only for training UNITO), and we provide an example script preparing the input data from OMIQ platform. 
 
-Example for **cytometric data**:
+Example for **cytometric data (flow cytometry below as an example)**:
 
 ```bash
 FSC_A	FSC_W	SSC_A	SSC_W	LIVEDEAD	CD3Q605
@@ -40,5 +40,26 @@ FSC_A	FSC_W	SSC_A	SSC_W	LIVEDEAD	CD3Q605
 26660.4297	89495.3594	32338.8301	73013.3125	0.7821	3.4795
 ```
 
-## Example
-We offer an example flow cytometry dataset since we cannot share the mass cytometry data used in the manuscript, the manual gating, and the sample code with corresponding UNITO model. The example script can be tested by running the main.py file, and all setting are already presetted in the script. The example project contains a 2 level auto-gating pipeline (lymphocyte and singlet) for flow cytometry. The output of UNITO should contain the converted image data (Data_image), gated bivaraite plot (figures), and csv files with gate_pred added as additional column (prediction). 
+## Available Versions:
+**1. Python Script for Automatic Gating (Prediction Only)**
+
+**2. Python Script for Training a Customized Model + Automatic Gating**
+
+**3. Jupyter Notebook for Automatic Gating (Prediction Only)**
+https://colab.research.google.com/drive/1nsiScEhYcYOl2TA7RaUJc-SoisI5IT4P?usp=sharing
+
+**4. Jupyter Notebook for Training a Customized Model + Automatic Gating**
+https://colab.research.google.com/drive/138_TfPLfFBkIuux3kGmZACrgTb-v14GQ?usp=sharing
+
+**5. Graphical User Interface Software for Automatic Gating**
+
+### Choosing the Right Version:
+Depending on your experience level with coding, you can choose the version that best suits your needs. The software version does not currently support model training. This is due to the heavy resource demands of training a deep learning model, which could overwhelm a user-interface environment and potentially crash the operating system.
+
+## Training Models:
+We provide instructions on training the model using the Python scripts or Jupyter notebooks. For users with limited local resources, we recommend using Jupyter notebooks, especially on Google Colab, which offers free access to GPUs. Once trained, the model can be transferred and used within the user interface software.
+
+## Ongoing Development:
+The user interface is still under active development, and we plan to add more features in future updates. The software will be continuously maintained by our team, ensuring better performance and additional functionalities over time.
+
+Please refer to the attached documentation for detailed instructions on using each version and training the models in their separate folder.

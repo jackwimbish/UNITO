@@ -30,7 +30,7 @@ path2_lastgate_pred_list[0] = './Raw_Data_pred/' # the first gate should take da
 # device = 'cuda' if torch.cuda.is_available() else 'cpu' 
 device = 'mps'
 n_worker = 0
-epoches = 100
+epoches = 1000
 
 hyperparameter_set = [
                       [1e-3, 8],
