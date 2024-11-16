@@ -159,29 +159,34 @@ def train_test_val_split(gate, path, dest = '.', train_pred = 'train'):
     path.to_csv(f"{dest}/Data/Data_{gate}/{train_pred}/subj.csv", index=False)
 
 
-def fill_hull(image):
+def fill_hull(image, convex=True):
     """
-    Compute the convex hull of the given binary image and
-    return a mask of the filled hull.
+    Compute the filled region of the given binary image.
+    If convex is True, compute the convex hull and return a mask of the filled hull.
+    If convex is False, only fill in the blank pixels within the existing boundaries.
     
     Adapted from:
     https://gist.github.com/stuarteberg/8982d8e0419bea308326933860ecce30
-
-    args:
-        image: the image that needs to be processed
     """
-    points = np.argwhere(image).astype(np.int16)
-    hull = scipy.spatial.ConvexHull(points)
-    convex_points = []
-    for vertex in hull.vertices:
-        convex_points.append(points[vertex].astype('int64'))
-    convex_points = np.array(convex_points)
-    convex_points[:, [1, 0]] = convex_points[:, [0, 1]]
+    if convex:
+        # Convex hull filling
+        points = np.argwhere(image).astype(np.int16)
+        hull = scipy.spatial.ConvexHull(points)
+        convex_points = []
+        for vertex in hull.vertices:
+            convex_points.append(points[vertex].astype('int64'))
+        convex_points = np.array(convex_points)
+        convex_points[:, [1, 0]] = convex_points[:, [0, 1]]
 
-    a, b = image.shape
-    black_frame = np.zeros([a,b],dtype=np.uint8)
-    cv2.fillPoly(black_frame, pts=[convex_points], color=(255, 255, 255))
-    black_frame[black_frame == 255] = 1
+        a, b = image.shape
+        black_frame = np.zeros([a, b], dtype=np.uint8)
+        cv2.fillPoly(black_frame, pts=[convex_points], color=(255, 255, 255))
+        black_frame[black_frame == 255] = 1
+    else:
+        # Filling within the existing object boundaries
+        black_frame = image.copy().astype(np.uint8)
+        contours, _ = cv2.findContours(black_frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cv2.drawContours(black_frame, contours, -1, color=(255, 255, 255), thickness=cv2.FILLED)
+        black_frame[black_frame == 255] = 1
 
     return black_frame
-
