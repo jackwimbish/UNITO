@@ -48,7 +48,7 @@ def matrix_plot(data_df_selected, x_axis, y_axis, pad_number = 0):
 
     return df_plot
 
-def export_matrix(file_name, x_axis, y_axis, gate_pre, gate, path_raw, seq = False, dest = '.'):
+def export_matrix(file_name, x_axis, y_axis, gate_pre, gate, path_raw, convex, seq = False, dest = '.'):
     """
     Converting column value from cytometric data to images
     args
@@ -57,6 +57,7 @@ def export_matrix(file_name, x_axis, y_axis, gate_pre, gate, path_raw, seq = Fal
         y_axis: second gating variable
         gate_pre: previous gate
         gate: current gate
+        convex: control mask processing
         seq: whether cells from previous gate should be filtered
         raw_path: path storing raw data
     """
@@ -84,13 +85,13 @@ def export_matrix(file_name, x_axis, y_axis, gate_pre, gate, path_raw, seq = Fal
     # check if there is points in gate
     df_plot = df_plot.to_numpy()
     if np.sum(df_plot) > 3:
-        df_plot = fill_hull(df_plot)
+        df_plot = fill_hull(df_plot, convex)
     sn.heatmap(df_plot, vmax = df_plot.max().max()/2, vmin = df_plot.min().min()/2)
     plt.savefig(os.path.join(f'{dest}/Data/Data_{gate}/Mask_PNG/', file_name+'.png'))
     np.save(os.path.join(f'{dest}/Data/Data_{gate}/Mask_Numpy/', file_name+'.npy'), df_plot)
     plt.close()
 
-def process_table(x_axis, y_axis, gate_pre, gate, directory, seq = False, dest = '.'):   
+def process_table(x_axis, y_axis, gate_pre, gate, directory, convex, seq = False, dest = '.'):   
     """
     Preparing images for deep learning model
     args:
@@ -99,6 +100,7 @@ def process_table(x_axis, y_axis, gate_pre, gate, directory, seq = False, dest =
         gate_pre: previous gate
         gate: current gate
         data_path: path storing raw data
+        convex: control mask processing
         seq: whether cells from previous gate should be filtered
     """
     if not os.path.exists(f'{dest}/Data/Data_{gate}'):
@@ -121,7 +123,7 @@ def process_table(x_axis, y_axis, gate_pre, gate, directory, seq = False, dest =
     
     # process the baseline subject
     for filename in name_list:
-        export_matrix(filename, x_axis, y_axis, gate_pre, gate, directory, seq, dest)
+        export_matrix(filename, x_axis, y_axis, gate_pre, gate, directory, convex, seq, dest)
     print("process table finished")
 
 

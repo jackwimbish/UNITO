@@ -28,6 +28,7 @@ path2_lastgate_pred_list[0] = './Raw_Data_pred/' # the first gate should take da
 # device = 'cuda' if torch.cuda.is_available() else 'cpu' 
 device = 'mps'
 n_worker = 0
+convex = True
 
 # define path
 dest = '.' # change depending on your needs
@@ -54,7 +55,7 @@ for i, (gate_pre, gate, x_axis, y_axis, path_raw) in enumerate(zip(gate_pre_list
 
     # 1. preprocess training data
     pred_path = './Raw_Data_pred'
-    process_table(x_axis, y_axis, gate_pre, gate, pred_path, seq = (gate_pre!=None), dest = dest)
+    process_table(x_axis, y_axis, gate_pre, gate, pred_path, convex, seq = (gate_pre!=None), dest = dest)
     train_test_val_split(gate, dest, 'pred')
 
     # 2. predict

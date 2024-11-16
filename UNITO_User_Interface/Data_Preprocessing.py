@@ -88,7 +88,7 @@ def export_matrix(file_name, x_axis, y_axis, gate_pre, gate, seq = False):
     # check if there is points in gate
     df_plot = df_plot.to_numpy()
     if np.sum(df_plot) > 3:
-        df_plot = fill_hull(df_plot)
+        df_plot = fill_hull(df_plot, convex=True)
     sn.heatmap(df_plot, vmax = df_plot.max().max()/2, vmin = df_plot.min().min()/2)
     plt.savefig(os.path.join(f'./Data_image/Data_{gate}/Mask_PNG/', file_name+'.png'))
     np.save(os.path.join(f'./Data_image/Data_{gate}/Mask_Numpy/', file_name+'.npy'), df_plot)

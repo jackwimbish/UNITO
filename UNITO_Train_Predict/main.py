@@ -31,6 +31,7 @@ path2_lastgate_pred_list[0] = './Raw_Data_pred/' # the first gate should take da
 device = 'mps'
 n_worker = 0
 epoches = 1000
+convex = True
 
 hyperparameter_set = [
                       [1e-3, 8],
@@ -67,7 +68,7 @@ for i, (gate_pre, gate, x_axis, y_axis, path_raw) in enumerate(zip(gate_pre_list
 
     # 1. preprocess training data
     train_path = './Raw_Data_train'
-    process_table(x_axis, y_axis, gate_pre, gate, train_path, seq = (gate_pre!=None), dest = dest)
+    process_table(x_axis, y_axis, gate_pre, gate, train_path, convex, seq = (gate_pre!=None), dest = dest)
     train_test_val_split(gate, train_path, dest, "train")
 
     # 2. train
