@@ -23,8 +23,8 @@ gate_pre_list[0] = None # the first gate does not have parent gate
 gate_list = list(gating.Gate)
 x_axis_list = list(gating.X_axis)
 y_axis_list = list(gating.Y_axis)
-path2_lastgate_pred_list = ['./prediction/' for x in range(len(gate_list))]
-path2_lastgate_pred_list[0] = './Raw_Data_pred/' # the first gate should take data from raw folder
+# path is "./prediction" if there is a parent gate, "./Raw_Data_pred" if there is no parent (i.e. parent is root)
+path2_lastgate_pred_list = ['./prediction/' if not pd.isna(g) else './Raw_Data_pred/' for g in gate_pre_list]
 
 # hyperparameter
 # device = 'cuda' if torch.cuda.is_available() else 'cpu' 
@@ -78,6 +78,8 @@ for i, (gate_pre, gate, x_axis, y_axis, path_raw) in enumerate(zip(gate_pre_list
         print("getting hyperparameters")
         if os.path.exists('./hyperparameter_tunning.csv'):
             hyperparameter_df = pd.read_csv('./hyperparameter_tunning.csv')
+            best_lr = float(hyperparameter_df.iloc[0]['learning_rate'])
+            best_bs = int(hyperparameter_df.iloc[0]['batch_size'])
         else:
             best_lr, best_bs = tune(gate, hyperparameter_set, device, tuning_epochs, n_worker, dest)
             hyperparameter_df.loc[len(hyperparameter_df)] = [gate, best_lr, best_bs]
