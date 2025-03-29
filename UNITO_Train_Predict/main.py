@@ -19,7 +19,7 @@ np.random.seed(0)
 # setting gates
 gating = pd.read_csv('./gating_structure.csv')
 gate_pre_list = list(gating.Parent_Gate)
-gate_pre_list[0] = None # the first gate does not have parent gate
+gate_pre_list = [g if not pd.isna(g) else None for g in gate_pre_list] # set to None if no parent gate
 gate_list = list(gating.Gate)
 x_axis_list = list(gating.X_axis)
 y_axis_list = list(gating.Y_axis)
