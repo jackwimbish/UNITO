@@ -31,6 +31,7 @@ path2_lastgate_pred_list[0] = './Raw_Data_pred/' # the first gate should take da
 device = 'mps'
 n_worker = 0
 epoches = 1000
+tuning_epochs = 100
 convex = True
 
 hyperparameter_set = [
@@ -61,6 +62,7 @@ if not os.path.exists(save_prediction_path):
 # UNITO
 ###########################################################
 hyperparameter_df = pd.DataFrame(columns = ['gate','learning_rate','batch_size'])
+has_hyperparameters = False
 
 for i, (gate_pre, gate, x_axis, y_axis, path_raw) in enumerate(zip(gate_pre_list, gate_list, x_axis_list, y_axis_list, path2_lastgate_pred_list)):
 
@@ -72,14 +74,23 @@ for i, (gate_pre, gate, x_axis, y_axis, path_raw) in enumerate(zip(gate_pre_list
     train_test_val_split(gate, train_path, dest, "train")
 
     # 2. train
-    best_lr, best_bs = tune(gate, hyperparameter_set, device, epoches, n_worker, dest)
-    hyperparameter_df.loc[len(hyperparameter_df)] = [gate, best_lr, best_bs]
+    if not has_hyperparameters:
+        print("getting hyperparameters")
+        if os.path.exists('./hyperparameter_tunning.csv'):
+            hyperparameter_df = pd.read_csv('./hyperparameter_tunning.csv')
+        else:
+            best_lr, best_bs = tune(gate, hyperparameter_set, device, tuning_epochs, n_worker, dest)
+            hyperparameter_df.loc[len(hyperparameter_df)] = [gate, best_lr, best_bs]
+            print(f"got hyperparameters: LR:{best_lr}, BS:{best_bs}")
+            print(hyperparameter_df)
+            hyperparameter_df.to_csv('./hyperparameter_tunning.csv')
+        has_hyperparameters = True
     train(gate, best_lr, device, best_bs, epoches, n_worker, dest)
 
     # 3. preprocess training data
     print(f"Start prediction for {gate}")
     pred_path = './Raw_Data_pred'
-    process_table(x_axis, y_axis, gate_pre, gate, pred_path, seq = (gate_pre!=None), dest = dest)
+    process_table(x_axis, y_axis, gate_pre, gate, pred_path, convex, seq = (gate_pre!=None), dest = dest)
     train_test_val_split(gate, pred_path, dest, 'pred')
 
     # 4. predict
