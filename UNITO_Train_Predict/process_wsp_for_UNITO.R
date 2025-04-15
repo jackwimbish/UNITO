@@ -8,6 +8,9 @@ if (!requireNamespace("flowCore", quietly = TRUE)) {
 if (!requireNamespace("CytoML", quietly = TRUE)) {
   BiocManager::install("CytoML")
 }
+if (!requireNamespace("flowWorkspace", quietly = TRUE)) {
+  BiocManager::install("flowWorkspace")
+}
 
 # Load libraries
 library(flowCore)
@@ -104,7 +107,23 @@ process_fcs_folder_with_gates <- function(fcs_folder, workspace_file, output_fol
     }
     n_pops <- length(pop_paths)
     gate_matrix <- matrix(0, nrow = n_events, ncol = n_pops)
-    colnames(gate_matrix) <- gsub("/", "_", pop_paths)
+    
+    # Format population names for column headers
+    formatted_pop_names <- sapply(pop_paths, function(pop) {
+      # Replace slashes with underscores
+      pop_name <- gsub("/", "_", pop)
+      # Replace open parentheses with "p"
+      pop_name <- gsub("\\(", "p", pop_name)
+      # Replace close parentheses with "q"
+      pop_name <- gsub("\\)", "q", pop_name)
+      # Replace spaces with underscores
+      pop_name <- gsub(" ", "_", pop_name)
+      # Remove leading underscores
+      pop_name <- gsub("^_+", "", pop_name)
+      return(pop_name)
+    })
+    
+    colnames(gate_matrix) <- formatted_pop_names
     
     # Fill the matrix with gate memberships
     for (i in 1:length(pop_paths)) {
@@ -186,8 +205,20 @@ process_fcs_folder_with_gates <- function(fcs_folder, workspace_file, output_fol
       # Filter the dataframe to only include those indices
       result_df <- result_df[filter_indices, ]
       
-      # Add a note to the output filename
-      filter_suffix <- paste0("_", gsub("/", "_", filter_population))
+      # Format the filter population for the filename
+      filter_suffix <- filter_population
+      # Replace slashes with underscores
+      filter_suffix <- gsub("/", "_", filter_suffix)
+      # Replace open parentheses with "p"
+      filter_suffix <- gsub("\\(", "p", filter_suffix)
+      # Replace close parentheses with "q"
+      filter_suffix <- gsub("\\)", "q", filter_suffix)
+      # Replace spaces with underscores
+      filter_suffix <- gsub(" ", "_", filter_suffix)
+      # Remove leading underscores
+      filter_suffix <- gsub("^_+", "", filter_suffix)
+      
+      filter_suffix <- paste0("_", filter_suffix)
     } else {
       filter_suffix <- ""
     }
@@ -198,7 +229,7 @@ process_fcs_folder_with_gates <- function(fcs_folder, workspace_file, output_fol
     
     # Create output filename based on cleaned sample name and optional filter
     output_csv <- file.path(output_folder, 
-                            paste0(clean_name, filter_suffix, "_gated.csv"))
+                            paste0(clean_name, ".csv"))
     
     # Write to CSV
     write.csv(result_df, file = output_csv, row.names = FALSE)
