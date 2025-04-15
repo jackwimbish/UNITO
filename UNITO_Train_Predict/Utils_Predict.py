@@ -7,6 +7,12 @@ from Data_Preprocessing import normalize
 import cv2
 
 
+def get_pred_csv_path(subj, gate, save_prediction_path):
+  if subj.endswith('.csv'):
+      subj = subj.split('.csv')[0]
+  prediction_csv_path = os.path.join(f'{save_prediction_path}/{subj}_{gate}.csv')
+  return prediction_csv_path
+
 def mask_to_gate(y_list, pred_list, x_list, subj_list, x_axis, y_axis, gate, gate_pre, path_raw, save_prediction_path, dest, worker = 0, idx = 0, seq = False):
   """
   Prepare data for converting predicted mask to cell-level labels
@@ -36,16 +42,22 @@ def mask_to_gate(y_list, pred_list, x_list, subj_list, x_axis, y_axis, gate, gat
   substring = ".csv.npy"
   subj_path = subj_path.split(substring)[0]
 
-  raw_table = pd.read_csv(path_raw + subj_path + '.csv')
+
+  prediction_csv_path = get_pred_csv_path(subj_path, gate, save_prediction_path)
+  raw_csv_path = path_raw + subj_path + '.csv'
+  
+  base_csv_path = raw_csv_path
+
+  raw_table = pd.read_csv(base_csv_path)
   raw_table = raw_table.reset_index(drop=True)
   
-  data_df_pred = get_pred_label(raw_table, x_axis, y_axis, mask_pred, gate, gate_pre, seq)
-  data_df_pred.to_csv(os.path.join(f'{save_prediction_path}/{subj_path}.csv'))
+  data_df_pred = get_pred_label(raw_table, x_axis, y_axis, mask_pred, gate, subj_path, save_prediction_path, gate_pre, seq)
+  data_df_pred[f"{gate}_pred"].to_csv(prediction_csv_path, index=False)
 
   return data_df_pred, subj_path
 
 
-def get_pred_label(data_df, x_axis, y_axis, mask, gate, gate_pre=None, seq=False):
+def get_pred_label(data_df, x_axis, y_axis, mask, gate, subj, save_prediction_path, gate_pre=None, seq=False):
     """
     Converting mask image to corresponding cell-level prediction label
     argsZ:
@@ -59,6 +71,9 @@ def get_pred_label(data_df, x_axis, y_axis, mask, gate, gate_pre=None, seq=False
     """
 
     if seq:
+      seq_column_csv = get_pred_csv_path(subj, gate_pre, save_prediction_path)
+      seq_column_df = pd.read_csv(seq_column_csv)
+      data_df[f"{gate_pre}_pred"] = seq_column_df[f"{gate_pre}_pred"]
       # prevent reset index fail
       if 'level_0' in data_df.columns:
          data_df = data_df.drop('level_0', axis=1)
@@ -74,11 +89,11 @@ def get_pred_label(data_df, x_axis, y_axis, mask, gate, gate_pre=None, seq=False
       data_df_selected = data_df
     
     data_df_selected[x_axis+'_normalized'] = data_df_selected[x_axis].copy()
-    data_df_selected[x_axis+'_normalized'] = normalize(data_df_selected, x_axis)*100
+    data_df_selected[x_axis+'_normalized'] = normalize(data_df_selected, x_axis, gate)*100
     data_df_selected[x_axis+'_normalized'] = data_df_selected[x_axis+'_normalized'].round(0).astype(int)
 
     data_df_selected[y_axis+'_normalized'] = data_df_selected[y_axis].copy()
-    data_df_selected[y_axis+'_normalized'] = normalize(data_df_selected, y_axis)*100
+    data_df_selected[y_axis+'_normalized'] = normalize(data_df_selected, y_axis, gate)*100
     data_df_selected[y_axis+'_normalized'] = data_df_selected[y_axis+'_normalized'].round(0).astype(int)
 
     # data_df_selected = pd.concat([data_df_selected, data_df[[gate]]], axis = 1)

@@ -7,7 +7,7 @@ import seaborn as sn
 import scipy
 import cv2
 
-def normalize(data, column):
+def old_normalize(data, column):
     """
     normalize the cytometric measurement
     args:
@@ -19,6 +19,47 @@ def normalize(data, column):
     max = df_normalize.max()
     df_normalize = (df_normalize-min)/(max-min)
     return df_normalize
+
+def winsorize_log_normalize(data, column, lower_percentile=1, upper_percentile=99):
+    """
+    Log transform then normalize
+    """
+    df_normalize = data[column].copy()
+    lower = df_normalize.quantile(lower_percentile/100)
+    upper = df_normalize.quantile(upper_percentile/100)
+
+    # Cap values
+    df_normalize = df_normalize.clip(lower, upper)
+
+    # Add small constant to handle zeros
+    df_normalize = np.log1p(df_normalize)
+    
+    min_val = df_normalize.min()
+    max_val = df_normalize.max()
+    
+    return (df_normalize - min_val) / (max_val - min_val)
+
+def winsorize_normalize(data, column, lower_percentile=1, upper_percentile=99):
+    """
+    Winsorize (cap outliers) then normalize
+    """
+    df_normalize = data[column].copy()
+    lower = df_normalize.quantile(lower_percentile/100)
+    upper = df_normalize.quantile(upper_percentile/100)
+    
+    # Cap values
+    df_normalize = df_normalize.clip(lower, upper)
+    
+    # Apply normalization
+    min_val = df_normalize.min()
+    max_val = df_normalize.max()
+    
+    return (df_normalize - min_val) / (max_val - min_val)
+
+def normalize(data, column, gate):
+    if gate == "Live":
+        return winsorize_normalize(data, column, 0.5, 99.5)
+    return old_normalize(data, column)
 
 def matrix_plot(data_df_selected, x_axis, y_axis, pad_number = 0):
     """
@@ -66,9 +107,9 @@ def export_matrix(file_name, x_axis, y_axis, gate_pre, gate, path_raw, convex, s
         data_df = data_df[data_df[gate_pre]==1]
 
     data_df_selected = data_df[[x_axis, y_axis, gate]]
-    data_df_selected[x_axis] = normalize(data_df_selected, x_axis)
+    data_df_selected[x_axis] = normalize(data_df_selected, x_axis, gate)
     data_df_selected[x_axis] = data_df_selected[x_axis]*100
-    data_df_selected[y_axis] = normalize(data_df_selected, y_axis)
+    data_df_selected[y_axis] = normalize(data_df_selected, y_axis, gate)
     data_df_selected[y_axis] = data_df_selected[y_axis]*100
 
     fig = plt.figure()
@@ -103,6 +144,7 @@ def process_table(x_axis, y_axis, gate_pre, gate, directory, convex, seq = False
         convex: control mask processing
         seq: whether cells from previous gate should be filtered
     """
+    print(f"Processing table... x:{x_axis} y:{y_axis} pre:{gate_pre}, gate:{gate}, directory:{directory}, convex:{convex}, seq:{seq}, dest:{dest}")
     if not os.path.exists(f'{dest}/Data/Data_{gate}'):
         os.mkdir(f"{dest}/Data/Data_{gate}")
         os.mkdir(f"{dest}/Data/Data_{gate}/Mask_Numpy")

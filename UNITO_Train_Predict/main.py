@@ -24,7 +24,7 @@ gate_list = list(gating.Gate)
 x_axis_list = list(gating.X_axis)
 y_axis_list = list(gating.Y_axis)
 # path is "./prediction" if there is a parent gate, "./Raw_Data_pred" if there is no parent (i.e. parent is root)
-path2_lastgate_pred_list = ['./prediction/' if not pd.isna(g) else './Raw_Data_pred/' for g in gate_pre_list]
+path2_lastgate_pred_list = ['./Raw_Data_pred/' for g in gate_pre_list]
 
 # hyperparameter
 # device = 'cuda' if torch.cuda.is_available() else 'cpu' 
@@ -104,7 +104,7 @@ for i, (gate_pre, gate, x_axis, y_axis, path_raw) in enumerate(zip(gate_pre_list
     print(f"{gate}: accuracy:{accuracy}, recall:{recall}, precition:{precision}, f1 score:{f1}")
 
     # 6. Plot gating results
-    plot_all(gate_pre, gate, x_axis, y_axis, path_raw, save_figure_path)
+    plot_all(gate_pre, gate, x_axis, y_axis, path_raw, save_prediction_path, save_figure_path)
     print("All UNITO prediction visualization saved")
 
 print("Seqential autogating prediction finished")

@@ -5,8 +5,9 @@ import os
 import datashader as ds
 from datashader.mpl_ext import dsshow
 from scipy.spatial import ConvexHull
+from Utils_Predict import get_pred_csv_path
 
-def plot_all(gate1, gate2, x_axis, y_axis, raw_path, figure_path):
+def plot_all(gate1, gate2, x_axis, y_axis, raw_path, save_prediction_path, figure_path):
     """
     Plot gating results for all samples
     args:
@@ -24,9 +25,9 @@ def plot_all(gate1, gate2, x_axis, y_axis, raw_path, figure_path):
     path_val = pd.read_csv(f"./Data/Data_{gate2}/pred/subj.csv")
     # find path for raw tabular data
     for subject in path_val.Image:
-        plot_one(gate1, gate2, x_axis, y_axis, subject, raw_path, figure_path)
+        plot_one(gate1, gate2, x_axis, y_axis, subject, raw_path, save_prediction_path, figure_path)
         
-def plot_one(gate1, gate2, x_axis, y_axis, subject, raw_path, figure_path):
+def plot_one(gate1, gate2, x_axis, y_axis, subject, raw_path, save_prediction_path, figure_path):
     """
     Plot a single sample with target gate
     args:
@@ -92,7 +93,13 @@ def plot_one(gate1, gate2, x_axis, y_axis, subject, raw_path, figure_path):
     y_axis_pred = y_axis
 
     if gate1 != None:
+        seq_column_csv = get_pred_csv_path(subject, gate1, save_prediction_path)
+        seq_column_df = pd.read_csv(seq_column_csv)
+        data[f"{gate1}_pred"] = seq_column_df[f"{gate1}_pred"]
         gate1_pred = gate1 + '_pred'
+    seq_column_csv = get_pred_csv_path(subject, gate2, save_prediction_path)
+    seq_column_df = pd.read_csv(seq_column_csv)
+    data[f"{gate2}_pred"] = seq_column_df[f"{gate2}_pred"]
     gate2_pred = gate2 + '_pred'
 
     data_table = pd.read_csv(f'./prediction/{subject}')
