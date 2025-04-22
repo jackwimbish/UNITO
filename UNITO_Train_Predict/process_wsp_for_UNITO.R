@@ -16,6 +16,7 @@ if (!requireNamespace("flowWorkspace", quietly = TRUE)) {
 library(flowCore)
 library(CytoML)
 library(dplyr)
+library(flowWorkspace)
 
 # Function to process all FCS files in a folder with FlowJo workspace
 process_fcs_folder_with_gates <- function(fcs_folder, workspace_file, output_folder, 

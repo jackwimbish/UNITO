@@ -7,10 +7,10 @@ from Data_Preprocessing import normalize
 import cv2
 
 
-def get_pred_csv_path(subj, gate, save_prediction_path):
+def get_pred_csv_path(subj, save_prediction_path):
   if subj.endswith('.csv'):
       subj = subj.split('.csv')[0]
-  prediction_csv_path = os.path.join(f'{save_prediction_path}/{subj}_{gate}.csv')
+  prediction_csv_path = os.path.join(f'{save_prediction_path}/{subj}.csv')
   return prediction_csv_path
 
 def mask_to_gate(y_list, pred_list, x_list, subj_list, x_axis, y_axis, gate, gate_pre, path_raw, save_prediction_path, dest, worker = 0, idx = 0, seq = False):
@@ -43,21 +43,21 @@ def mask_to_gate(y_list, pred_list, x_list, subj_list, x_axis, y_axis, gate, gat
   subj_path = subj_path.split(substring)[0]
 
 
-  prediction_csv_path = get_pred_csv_path(subj_path, gate, save_prediction_path)
-  raw_csv_path = path_raw + subj_path + '.csv'
+  prediction_csv_path = get_pred_csv_path(subj_path, save_prediction_path)
+  raw_csv_path = path_raw + '/' + subj_path + '.csv'
   
-  base_csv_path = raw_csv_path
+  base_csv_path = prediction_csv_path if gate_pre else raw_csv_path
 
   raw_table = pd.read_csv(base_csv_path)
   raw_table = raw_table.reset_index(drop=True)
   
-  data_df_pred = get_pred_label(raw_table, x_axis, y_axis, mask_pred, gate, subj_path, save_prediction_path, gate_pre, seq)
-  data_df_pred[f"{gate}_pred"].to_csv(prediction_csv_path, index=False)
+  data_df_pred = get_pred_label(raw_table, x_axis, y_axis, mask_pred, gate, gate_pre, seq)
+  data_df_pred.to_csv(prediction_csv_path)
 
   return data_df_pred, subj_path
 
 
-def get_pred_label(data_df, x_axis, y_axis, mask, gate, subj, save_prediction_path, gate_pre=None, seq=False):
+def get_pred_label(data_df, x_axis, y_axis, mask, gate, gate_pre=None, seq=False):
     """
     Converting mask image to corresponding cell-level prediction label
     argsZ:
@@ -71,9 +71,6 @@ def get_pred_label(data_df, x_axis, y_axis, mask, gate, subj, save_prediction_pa
     """
 
     if seq:
-      seq_column_csv = get_pred_csv_path(subj, gate_pre, save_prediction_path)
-      seq_column_df = pd.read_csv(seq_column_csv)
-      data_df[f"{gate_pre}_pred"] = seq_column_df[f"{gate_pre}_pred"]
       # prevent reset index fail
       if 'level_0' in data_df.columns:
          data_df = data_df.drop('level_0', axis=1)
@@ -82,8 +79,8 @@ def get_pred_label(data_df, x_axis, y_axis, mask, gate, subj, save_prediction_pa
       data_df_selected = data_df[data_df[gate_pre + '_pred']==1].reset_index(drop=True)
       # keep out-gate prediction data for later concat
       data_df_outgate = data_df[data_df[gate_pre + '_pred']==0].reset_index(drop=True)
-      data_df_outgate[x_axis+'_normalized'] = 0
-      data_df_outgate[y_axis+'_normalized'] = 0
+      #data_df_outgate[x_axis+'_normalized'] = 0
+      #data_df_outgate[y_axis+'_normalized'] = 0
       data_df_outgate[gate + '_pred'] = 0
     else:
       data_df_selected = data_df
@@ -124,6 +121,8 @@ def get_pred_label(data_df, x_axis, y_axis, mask, gate, subj, save_prediction_pa
        data_df_recovered = pd.concat([data_df_selected, data_df_outgate])
     else:
        data_df_recovered = data_df_selected
+    data_df_recovered = data_df_recovered.drop(columns=[x_axis+'_normalized'], errors='ignore')
+    data_df_recovered = data_df_recovered.drop(columns=[y_axis+'_normalized'], errors='ignore')
     return data_df_recovered
 
 
