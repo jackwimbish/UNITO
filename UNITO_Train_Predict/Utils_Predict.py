@@ -46,7 +46,7 @@ def mask_to_gate(y_list, pred_list, x_list, subj_list, x_axis, y_axis, gate, gat
   prediction_csv_path = get_pred_csv_path(subj_path, save_prediction_path)
   raw_csv_path = path_raw + '/' + subj_path + '.csv'
   
-  base_csv_path = prediction_csv_path if gate_pre else raw_csv_path
+  base_csv_path = prediction_csv_path if os.path.exists(prediction_csv_path) else raw_csv_path
 
   raw_table = pd.read_csv(base_csv_path)
   raw_table = raw_table.reset_index(drop=True)

@@ -57,8 +57,9 @@ def winsorize_normalize(data, column, lower_percentile=1, upper_percentile=99):
     return (df_normalize - min_val) / (max_val - min_val)
 
 def normalize(data, column, gate=None):
+    if gate == "Live":
+        return winsorize_normalize(data, column, 0.5, 99.9)
     return old_normalize(data, column)
-    #return winsorize_normalize(data, column, 0.5, 99.5)
 
 def matrix_plot(data_df_selected, x_axis, y_axis, pad_number = 0):
     """
