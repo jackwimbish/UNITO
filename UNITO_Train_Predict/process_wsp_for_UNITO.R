@@ -111,8 +111,8 @@ process_fcs_folder_with_gates <- function(fcs_folder, workspace_file, output_fol
     
     # Format population names for column headers
     formatted_pop_names <- sapply(pop_paths, function(pop) {
-      # Replace slashes with underscores
-      pop_name <- gsub("/", "_", pop)
+      # Replace slashes with double underscores
+      pop_name <- gsub("/", "__", pop)
       # Replace open parentheses with "p"
       pop_name <- gsub("\\(", "p", pop_name)
       # Replace close parentheses with "q"
@@ -208,8 +208,8 @@ process_fcs_folder_with_gates <- function(fcs_folder, workspace_file, output_fol
       
       # Format the filter population for the filename
       filter_suffix <- filter_population
-      # Replace slashes with underscores
-      filter_suffix <- gsub("/", "_", filter_suffix)
+      # Replace slashes with double underscores
+      filter_suffix <- gsub("/", "__", filter_suffix)
       # Replace open parentheses with "p"
       filter_suffix <- gsub("\\(", "p", filter_suffix)
       # Replace close parentheses with "q"
